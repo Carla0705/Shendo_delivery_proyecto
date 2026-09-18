@@ -29,8 +29,7 @@ export default function ProductsView({ products, onAddProduct }) {
     
     // Aquí enviamos el objeto tal cual lo espera la BD
     onAddProduct({ 
-      imagen_url: tempUrl, 
-      emoji, 
+      imagen_url:tempUrl,
       nombre: desc.trim(), 
       precio: numPrice,
       descripcion: "Descripción pendiente", 
