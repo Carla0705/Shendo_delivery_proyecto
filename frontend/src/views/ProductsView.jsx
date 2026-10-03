@@ -20,16 +20,11 @@ export default function ProductsView({ products, onAddProduct }) {
     }
     setError("");
 
-    let tempUrl = "";
-    if (imageFile) {
-      tempUrl = URL.createObjectURL(imageFile);
-    }
-
     const emoji = FALLBACK_EMOJIS[Math.floor(Math.random() * FALLBACK_EMOJIS.length)];
     
     // Aquí enviamos el objeto tal cual lo espera la BD
     onAddProduct({ 
-      imagen_url:tempUrl,
+      imageFile: imageFile,
       nombre: desc.trim(), 
       precio: numPrice,
       descripcion: "Descripción pendiente", 
