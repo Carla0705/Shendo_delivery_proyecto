@@ -5,6 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from .models import Productos, Usuarios, Pedidos, Categoria
+from django.core.files.storage import default_storage
 
 #este DEF lo que hace es leer el token JWT del header de la peticion
 #y devuelve el id_restaurante que esta guardado dentro del token. 
@@ -95,7 +96,7 @@ class ProductosView(APIView):
                 "descripcion": p.descripcion,
                 "precio": float(p.precio) if p.precio else 0,
                 "stock": p.stock,
-                "imagen_url": p.imagen_url,
+                "imagen_url": request.build_absolute_uri(p.imagen_url) if p.imagen_url else "",
                 "disponible": p.disponible,
             }
             for p in productos
@@ -126,12 +127,24 @@ class ProductosView(APIView):
         if isinstance(disponible, str):
          disponible = disponible.lower() == 'true'
 
+         imagen_url = ''
+
+         if 'imagen' in request.FILES:
+             print("ARCHIVO RECIBIDO:", request.FILES.get('imagen'))
+             imagen = request.FILES['imagen']
+             ruta_imagen = default_storage.save(
+                 f'productos/{imagen.name}',
+                 imagen
+            )
+             print("RUTA GUARDADA:", ruta_imagen)
+             imagen_url = f'/media/{ruta_imagen}'
+
         producto = Productos.objects.create(
             nombre=nombre,
             precio=precio,
             descripcion=request.data.get('descripcion', ''),
             stock=request.data.get('stock', 0),
-            imagen_url=request.data.get('imagen_url', ''),
+            imagen_url=imagen_url,
             disponible=disponible,
             id_restaurante_id=id_restaurante,  # Viene del token, no del usuario
         )
@@ -140,6 +153,8 @@ class ProductosView(APIView):
             'id_producto': producto.id_producto,
             'nombre': producto.nombre,
             'precio': float(producto.precio),
+            'imagen_url': request.build_absolute_uri(producto.imagen_url) if producto.imagen_url else "",
+
         }, status=status.HTTP_201_CREATED)
 
 # PEDIDOS... Lo mismoq que productos
